@@ -3,6 +3,17 @@ const { getStore } = require('@netlify/blobs');
 const STORE_NAME = 'djlk-events';
 const BLOB_KEY = 'events.json';
 
+function getEventsStore() {
+  const siteID = process.env.BLOBS_SITE_ID;
+  const token = process.env.BLOBS_TOKEN;
+  // Si les identifiants manuels sont fournis, on les utilise (contourne les cas
+  // où la détection automatique du contexte Netlify Blobs échoue).
+  if (siteID && token) {
+    return getStore({ name: STORE_NAME, siteID, token });
+  }
+  return getStore(STORE_NAME);
+}
+
 function json(statusCode, data) {
   return {
     statusCode,
@@ -50,7 +61,7 @@ async function writeEvents(store, events) {
 }
 
 exports.handler = async (event) => {
-  const store = getStore(STORE_NAME);
+  const store = getEventsStore();
   const method = event.httpMethod;
   const id = getIdFromPath(event);
 
