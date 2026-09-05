@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DJ LK — Gestion des dates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07060c;--bg2:#0c0a16;--surface:rgba(255,255,255,.055);--border:rgba(255,255,255,.12);--text:#f4f2ff;--soft:#bbb8cc;--pink:#ff2d92;--grad:linear-gradient(100deg,#8b2bff,#ff2d92 60%,#ff5e3a)}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(60vw 60vw at 10% 0%,rgba(139,43,255,.16),transparent 60%),radial-gradient(60vw 60vw at 95% 20%,rgba(255,45,146,.13),transparent 60%),var(--bg);color:var(--text);font-family:Inter,sans-serif;min-height:100vh}
+.wrap{width:min(100% - 28px,900px);margin:0 auto;padding:28px 0 60px}.brand{font:800 1.4rem Sora;margin-bottom:25px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--grad);margin-right:8px}
+h1{font:800 clamp(2rem,7vw,3rem) Sora;margin:0 0 8px}.sub{color:var(--soft);margin:0 0 25px}.panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin:18px 0;backdrop-filter:blur(12px)}
+label{display:block;color:var(--soft);font-size:.82rem;margin:0 0 7px}input,textarea,select{width:100%;border:1px solid var(--border);background:rgba(0,0,0,.3);color:var(--text);border-radius:12px;padding:13px;font:inherit;outline:none}input:focus,textarea:focus,select:focus{border-color:var(--pink)}textarea{min-height:110px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.full{grid-column:1/-1}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.btn{border:0;border-radius:999px;padding:12px 18px;font-weight:700;cursor:pointer;color:#fff;background:var(--grad)}.btn.secondary{background:rgba(255,255,255,.07);border:1px solid var(--border)}.btn.danger{background:rgba(255,45,146,.12);border:1px solid rgba(255,45,146,.4);color:#ff83bd}.hidden{display:none!important}.notice{padding:12px 14px;border-radius:12px;margin:12px 0;background:rgba(255,255,255,.06);color:var(--soft)}.notice.error{color:#ff83bd;background:rgba(255,45,146,.1)}.event{display:flex;justify-content:space-between;gap:15px;align-items:center;border:1px solid var(--border);background:rgba(255,255,255,.035);border-radius:15px;padding:15px;margin:10px 0}.event h3{margin:0 0 4px;font:700 1rem Sora}.event p{margin:0;color:var(--soft);font-size:.88rem}.event-actions{display:flex;gap:8px;flex-shrink:0}.small{padding:9px 13px;font-size:.82rem}@media(max-width:650px){.grid{grid-template-columns:1fr}.event{align-items:flex-start;flex-direction:column}.event-actions{width:100%}.event-actions .btn{flex:1}.wrap{padding-top:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><span class="dot"></span>DJ LK · ADMIN</div>
+  <div id="login">
+    <h1>Gérer les dates</h1>
+    <p class="sub">Ajoute, modifie ou supprime les prochaines dates depuis ton téléphone.</p>
+    <div class="panel">
+      <label for="password">Mot de passe administrateur</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="Mot de passe">
+      <div class="actions"><button class="btn" id="loginBtn">Se connecter</button><a class="btn secondary" href="/">Retour au site</a></div>
+      <div id="loginMsg"></div>
+    </div>
+  </div>
+
+  <div id="app" class="hidden">
+    <h1>Prochaines dates</h1>
+    <p class="sub">Les changements sont enregistrés directement sur Netlify.</p>
+
+    <div class="panel">
+      <h2 id="formTitle" style="font-family:Sora;margin-top:0">Ajouter une date</h2>
+      <form id="eventForm">
+        <div class="grid">
+          <div class="full"><label>Titre de l'événement *</label><input name="title" required placeholder="Soirée DJ LK"></div>
+          <div><label>Date *</label><input name="date" type="date" required></div>
+          <div><label>Heure</label><input name="time" type="time"></div>
+          <div><label>Lieu</label><input name="venue" placeholder="Eden Club"></div>
+          <div><label>Ville / localisation</label><input name="location" placeholder="La Chaux-de-Fonds, Suisse"></div>
+          <div><label>Statut</label><select name="status"><option>Confirmé</option><option>Bientôt</option><option>À annoncer</option></select></div>
+          <div><label>Lien (optionnel)</label><input name="link" type="url" placeholder="https://..."></div>
+          <div class="full"><label>Image (URL optionnelle)</label><input name="image" type="url" placeholder="https://.../image.jpg"></div>
+          <div class="full"><label>Description</label><textarea name="description" placeholder="Quelques détails sur la soirée..."></textarea></div>
+        </div>
+        <div class="actions">
+          <button class="btn" type="submit" id="saveBtn">Ajouter la date</button>
+          <button class="btn secondary hidden" type="button" id="cancelBtn">Annuler la modification</button>
+          <button class="btn secondary" type="button" id="logoutBtn">Se déconnecter</button>
+        </div>
+        <div id="formMsg"></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2 style="font-family:Sora;margin-top:0">Dates enregistrées</h2>
+      <div id="eventsList"></div>
+    </div>
+  </div>
+</div>
+<script>
+const API="/api/events";
+let password=localStorage.getItem("djlk_admin_password")||"";
+let editingId=null;
+const $=s=>document.querySelector(s);
+const form=$("#eventForm");
+
+function showApp(){ $("#login").classList.add("hidden"); $("#app").classList.remove("hidden"); loadEvents(); }
+function showLogin(){ $("#login").classList.remove("hidden"); $("#app").classList.add("hidden"); }
+function msg(el,text,error=false){el.innerHTML="";if(text){const d=document.createElement("div");d.className="notice"+(error?" error":"");d.textContent=text;el.appendChild(d)}}
+async function request(url="/api/events", options={}){
+  options.headers={...(options.headers||{}),"x-admin-password":password};
+  const res=await fetch(url,options);
+  if(res.status===401){localStorage.removeItem("djlk_admin_password");password="";showLogin();throw new Error("Mot de passe incorrect.");}
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error||"Erreur.");
+  return data;
+}
+async function checkPassword(){
+  try{await request();showApp()}catch(e){msg($("#loginMsg"),"Mot de passe incorrect ou serveur non configuré.",true)}
+}
+$("#loginBtn").onclick=()=>{password=$("#password").value;checkPassword()};
+$("#password").addEventListener("keydown",e=>{if(e.key==="Enter")$("#loginBtn").click()});
+async function loadEvents(){
+  try{
+    const events=await request();
+    const list=$("#eventsList");list.innerHTML="";
+    if(!events.length){list.innerHTML='<div class="notice">Aucune date future enregistrée.</div>';return}
+    events.forEach(e=>{
+      const row=document.createElement("div");row.className="event";
+      const info=document.createElement("div");
+      const h=document.createElement("h3");h.textContent=e.title;
+      const p=document.createElement("p");p.textContent=new Date(e.date+"T00:00:00").toLocaleDateString("fr-CH",{weekday:"long",day:"2-digit",month:"long",year:"numeric"})+(e.time?" · "+e.time:"")+" · "+(e.venue||"Lieu à préciser")+(e.location?" · "+e.location:"");
+      info.append(h,p);
+      const actions=document.createElement("div");actions.className="event-actions";
+      const edit=document.createElement("button");edit.className="btn secondary small";edit.textContent="Modifier";edit.onclick=()=>editEvent(e);
+      const del=document.createElement("button");del.className="btn danger small";del.textContent="Supprimer";del.onclick=()=>deleteEvent(e);
+      actions.append(edit,del);row.append(info,actions);list.appendChild(row);
+    });
+  }catch(e){msg($("#formMsg"),e.message,true)}
+}
+function editEvent(e){
+  editingId=e.id;$("#formTitle").textContent="Modifier la date";$("#saveBtn").textContent="Enregistrer";$("#cancelBtn").classList.remove("hidden");
+  for(const [key,value] of Object.entries(e)){if(form.elements[key])form.elements[key].value=value||""}
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function resetForm(){editingId=null;form.reset();$("#formTitle").textContent="Ajouter une date";$("#saveBtn").textContent="Ajouter la date";$("#cancelBtn").classList.add("hidden");msg($("#formMsg"),"")}
+$("#cancelBtn").onclick=resetForm;
+form.onsubmit=async e=>{
+  e.preventDefault();msg($("#formMsg"),"");
+  const data=Object.fromEntries(new FormData(form).entries());
+  try{
+    await request(editingId?API+"/"+encodeURIComponent(editingId):API,{method:editingId?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    msg($("#formMsg"),editingId?"Date modifiée !":"Date ajoutée !");
+    resetForm();await loadEvents();
+  }catch(err){msg($("#formMsg"),err.message,true)}
+};
+async function deleteEvent(e){
+  if(!confirm('Supprimer "'+e.title+'"?'))return;
+  try{await request(API+"/"+encodeURIComponent(e.id),{method:"DELETE"});loadEvents()}catch(err){msg($("#formMsg"),err.message,true)}
+}
+$("#logoutBtn").onclick=()=>{localStorage.removeItem("djlk_admin_password");password="";resetForm();showLogin()};
+if(password)checkPassword();
+</script>
+</body>
+</html>
