@@ -1,0 +1,75 @@
+<!--
+  =========================================================
+  À COLLER SUR TON SITE PRINCIPAL
+  =========================================================
+
+  1) Colle ce <div> à l'endroit où tu veux afficher les dates :
+-->
+<div id="dj-events"></div>
+
+<!--
+  2) Colle ce <script> juste avant la fermeture de </body> :
+-->
+<script>
+  async function loadDjEvents() {
+    const container = document.getElementById("dj-events");
+
+    try {
+      // Même domaine que le site (IIS route /api vers l'API Node) → pas de CORS à gérer
+      const res = await fetch("/api/events");
+      const events = await res.json();
+
+      if (events.length === 0) {
+        container.innerHTML = `<p class="no-events">Aucune date prévue pour le moment. Reviens bientôt !</p>`;
+        return;
+      }
+
+      let html = "";
+      events.forEach((e) => {
+        const dateStr = new Date(e.date + "T00:00:00").toLocaleDateString("fr-CH", {
+          weekday: "long", day: "2-digit", month: "long", year: "numeric"
+        });
+
+        html += `
+          <div class="dj-event-card">
+            <div class="dj-event-date">${dateStr}${e.time ? " · " + e.time : ""}</div>
+            <div class="dj-event-title">${escapeHtml(e.title)}</div>
+            ${e.venue ? `<div class="dj-event-venue">${escapeHtml(e.venue)}</div>` : ""}
+            ${e.link ? `<a href="${escapeHtml(e.link)}" target="_blank" rel="noopener" class="dj-event-link">Plus d'infos →</a>` : ""}
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    } catch (err) {
+      container.innerHTML = `<p class="no-events">Erreur de chargement des dates.</p>`;
+      console.error(err);
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  loadDjEvents();
+</script>
+
+<!--
+  3) Ajoute ce CSS dans ta feuille de style existante
+     (adapte les couleurs à ton design actuel)
+-->
+<style>
+  #dj-events { display: flex; flex-direction: column; gap: 14px; }
+  .dj-event-card {
+    background: #16161d; border: 1px solid #262632; border-radius: 12px; padding: 16px;
+  }
+  .dj-event-date {
+    color: #e0263f; font-weight: 700; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .dj-event-title { font-size: 17px; margin-top: 6px; color: #fff; }
+  .dj-event-venue { color: #9a9aa5; font-size: 14px; margin-top: 4px; }
+  .dj-event-link { display: inline-block; margin-top: 10px; color: #e0263f; font-size: 14px; text-decoration: none; }
+  .no-events { color: #9a9aa5; text-align: center; }
+</style>
